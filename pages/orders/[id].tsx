@@ -2,14 +2,13 @@ import { GetServerSideProps, NextPage } from 'next';
 import { getServerSession } from 'next-auth/next';
 
 import { Typography, Grid, Card, CardContent, Divider, Box, Chip } from '@mui/material';
-import { CreditScoreOutlined } from '@mui/icons-material';
+import { CreditCardOffOutlined, CreditScoreOutlined } from '@mui/icons-material';
 
 import { authOptions } from '../api/auth/[...nextauth]';
 import { CartList, OrdenSumary } from '@/components/cart';
 import { ShopLayout } from '@/components/layout';
 import { dbOrder } from '@/database';
-import { IOrder } from '../../interfaces/order';
-import { useRouter } from 'next/router';
+import { IOrder } from '@/interfaces/order';
 
 interface Props {
 	order: IOrder;
@@ -18,37 +17,50 @@ interface Props {
 const OrderPage: NextPage<Props> = ({ order }) => {
 	const { firstName, lastName, address, city, zip, country, phone, address2 } =
 		order.shippingAddress;
-	const { query } = useRouter();
+
+	const { tax, subtotal, total, numberOfItems } = order;
+
+	const orderSumaryValues = {
+		tax,
+		subtotal,
+		total,
+		numberOfItems
+	};
 
 	return (
-		<ShopLayout title='Resumen de la orden 8576654' pageDescription=' Resumen de la orden '>
+		<ShopLayout title='Resumen de la orden' pageDescription=' Resumen de la orden '>
 			<Typography variant='h1' component='h1'>
-				Orden {query.id}
+				Orden {order._id}
 			</Typography>
 
-			{/* <Chip
-				sx={{ my: 2 }}
-				label='Pendiente de pago'
-				variant='outlined'
-				color='error'
-				icon={<CreditCardOffOutlined />}
-			/> */}
-			<Chip
-				sx={{ my: 2 }}
-				label='Orden pagada'
-				variant='outlined'
-				color='success'
-				icon={<CreditScoreOutlined />}
-			/>
+			{order.isPaid ? (
+				<Chip
+					sx={{ my: 2 }}
+					label='Orden pagada'
+					variant='outlined'
+					color='success'
+					icon={<CreditScoreOutlined />}
+				/>
+			) : (
+				<Chip
+					sx={{ my: 2 }}
+					label='Pendiente de pago'
+					variant='outlined'
+					color='error'
+					icon={<CreditCardOffOutlined />}
+				/>
+			)}
 
 			<Grid container>
 				<Grid item xs={12} sm={7}>
-					<CartList />
+					<CartList products={order.orderItems} />
 				</Grid>
 				<Grid item xs={12} sm={5}>
 					<Card className='sumary-card'>
 						<CardContent>
-							<Typography variant='h2'>Resumen (3 Productos)</Typography>
+							<Typography variant='h2'>
+								Resumen ({order.numberOfItems} Producto{order.numberOfItems !== 1 && 's'})
+							</Typography>
 							<Divider />
 
 							<Typography variant='subtitle1'>Direccion de entrega</Typography>
@@ -63,19 +75,29 @@ const OrderPage: NextPage<Props> = ({ order }) => {
 
 							<Divider sx={{ my: 1 }} />
 
-							<OrdenSumary />
+							<OrdenSumary values={orderSumaryValues} />
 
 							<Box sx={{ mt: 3 }}>
 								{/*Pagar */}
 								<h1>Pagar</h1>
 
-								<Chip
-									sx={{ my: 2 }}
-									label='Orden pagada'
-									variant='outlined'
-									color='success'
-									icon={<CreditScoreOutlined />}
-								/>
+								{order.isPaid ? (
+									<Chip
+										sx={{ my: 2 }}
+										label='Orden pagada'
+										variant='outlined'
+										color='success'
+										icon={<CreditScoreOutlined />}
+									/>
+								) : (
+									<Chip
+										sx={{ my: 2 }}
+										label='Orden pendiente de pago'
+										variant='outlined'
+										color='error'
+										icon={<CreditCardOffOutlined />}
+									/>
+								)}
 							</Box>
 						</CardContent>
 					</Card>

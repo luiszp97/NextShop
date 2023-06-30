@@ -4,14 +4,15 @@ import { Box, Button, CardActionArea, CardMedia, Grid, Link, Typography } from '
 
 import { ItemCounter } from '../ui';
 import { CartContext } from '@/context';
-import { ICartProduct } from '@/interfaces';
+import { ICartProduct, IOrderItem } from '@/interfaces';
 
 // const productsInCart = [initialData.products[0], initialData.products[5], initialData.products[3]];
 
 interface Props {
 	editable?: boolean;
+	products?: IOrderItem[];
 }
-export const CartList: FC<Props> = ({ editable = false }) => {
+export const CartList: FC<Props> = ({ editable = false, products }) => {
 	const { cart, updateCartQuantity, removeProductToCart } = useContext(CartContext);
 
 	const onNewQuantityValue = (product: ICartProduct, newQuantityValue: number) => {
@@ -19,9 +20,11 @@ export const CartList: FC<Props> = ({ editable = false }) => {
 		updateCartQuantity(product);
 	};
 
+	const productsToShow = products ? products : cart;
+
 	return (
 		<>
-			{cart.map((product) => (
+			{productsToShow.map((product) => (
 				<Grid container key={product.slug + product.size} spacing={2} sx={{ mb: 1 }}>
 					<Grid item xs={3}>
 						{/*Llevar a la pagina del producto */}
@@ -47,9 +50,11 @@ export const CartList: FC<Props> = ({ editable = false }) => {
 							</Typography>
 							{editable ? (
 								<ItemCounter
-									maxValue={product.inStock}
+									maxValue={5}
 									quantity={product.quantity}
-									onChangeQuantity={(newValue) => onNewQuantityValue(product, newValue)}
+									onChangeQuantity={(newValue) =>
+										onNewQuantityValue(product as ICartProduct, newValue)
+									}
 								/>
 							) : (
 								<Typography variant='h4' component='p'>
@@ -64,7 +69,11 @@ export const CartList: FC<Props> = ({ editable = false }) => {
 						{/*Editable */}
 
 						{editable && (
-							<Button onClick={() => removeProductToCart(product)} variant='text' color='secondary'>
+							<Button
+								onClick={() => removeProductToCart(product as ICartProduct)}
+								variant='text'
+								color='secondary'
+							>
 								Remover
 							</Button>
 						)}
