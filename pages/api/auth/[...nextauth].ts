@@ -1,7 +1,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
-import { useContext } from 'react';
 import { dbUsers } from "@/database";
 
 interface UserToken {
